@@ -22,13 +22,20 @@ def create_db():  # создает таблицы
 
 
 def get_students(course_id):  # возвращает студентов определенного курса
-    students_list = []
+    # students_list = []
     with pg.connect(database='netology', user='netology', password='netology', host='localhost', port=5432) as conn:
         cur = conn.cursor()
-        cur.execute(f'''SELECT student_id FROM student_course WHERE course_id = {course_id};''', (course_id,))
-        students_ids = cur.fetchall()
-        for student_id in students_ids:
-            students_list.append(get_student(student_id[0]))
+        # cur.execute(f'''SELECT student_id FROM student_course WHERE course_id = {course_id};''', (course_id,))
+        # students_ids = cur.fetchall()
+        cur.execute(f'''SELECT student.id, student.name, course.name, course_id 
+                        FROM student_course 
+                        LEFT JOIN student 
+                        ON student_id = student.id 
+                        LEFT JOIN course 
+                        ON course.id = course_id;''', (course_id,))
+        # for student_id in students_ids:
+        #     students_list.append(get_student(student_id[0]))
+        students_list = cur.fetchall()
         return students_list
 
 
@@ -74,7 +81,7 @@ if __name__ == '__main__':
     #            'birth': '1/8/1999'}
     # add_student(student)
     # add_course('Python-разработчик')
-    print(get_student(1))
+    # print(get_student(1))
     students = []
     with pg.connect(database='netology', user='netology', password='netology', host='localhost', port=5432) as conn:
         cur = conn.cursor()
@@ -88,6 +95,8 @@ if __name__ == '__main__':
                             'gpa': student[2],
                             'birth': student[3]}
             students.append(curr_student)
-        print(students)
+        # print(students)
         print(get_students(1))
+        # cur.execute('''SELECT * FROM student_course;''')
+        # print(cur.fetchall())
         # add_students(1, students)
