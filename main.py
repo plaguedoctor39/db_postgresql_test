@@ -1,4 +1,5 @@
 import psycopg2 as pg
+import datetime as dt
 
 
 def create_db():  # создает таблицы
@@ -27,12 +28,12 @@ def get_students(course_id):  # возвращает студентов опре
         cur = conn.cursor()
         # cur.execute(f'''SELECT student_id FROM student_course WHERE course_id = {course_id};''', (course_id,))
         # students_ids = cur.fetchall()
-        cur.execute(f'''SELECT student.id, student.name, course.name, course_id 
+        cur.execute(f'''SELECT student.id, student.name, course.name, course.id 
                         FROM student_course 
-                        LEFT JOIN student 
-                        ON student_id = student.id 
                         LEFT JOIN course 
-                        ON course.id = course_id;''', (course_id,))
+                        ON course.id = {course_id}
+                        LEFT JOIN student 
+                        ON student_id = student.id WHERE course_id = {course_id};''')
         # for student_id in students_ids:
         #     students_list.append(get_student(student_id[0]))
         students_list = cur.fetchall()
@@ -44,9 +45,10 @@ def add_students(course_id, students):  # создает студентов и
     with pg.connect(database='netology', user='netology', password='netology', host='localhost', port=5432) as conn:
         cur = conn.cursor()
         for student in students:
-            add_student(student)
+            # add_student(student)
             cur.execute('''INSERT INTO student_course(student_id, course_id) VALUES (%s, %s)''',
                         (student['id'], course_id))
+        # conn.commit()
         cur.execute('''SELECT * FROM student_course''')
         print(cur.fetchall())
 
@@ -66,6 +68,7 @@ def add_student(student):  # просто создает студента
         print(cur.fetchall())
 
 
+
 def get_student(student_id):
     with pg.connect(database='netology', user='netology', password='netology', host='localhost', port=5432) as conn:
         cur = conn.cursor()
@@ -76,11 +79,11 @@ def get_student(student_id):
 
 if __name__ == '__main__':
     # create_db()
-    # student = {'name': 'Михаил',
+    # student = {'name': 'Даниил',
     #            'gpa': 5,
-    #            'birth': '1/8/1999'}
+    #            'birth': dt.date(1998,9,3)}
     # add_student(student)
-    # add_course('Python-разработчик')
+    # add_course('Веб-разработчик')
     # print(get_student(1))
     students = []
     with pg.connect(database='netology', user='netology', password='netology', host='localhost', port=5432) as conn:
@@ -97,6 +100,6 @@ if __name__ == '__main__':
             students.append(curr_student)
         # print(students)
         print(get_students(1))
-        # cur.execute('''SELECT * FROM student_course;''')
-        # print(cur.fetchall())
-        # add_students(1, students)
+        cur.execute('''SELECT * FROM student_course;''')
+        print(cur.fetchall())
+        # add_students(2, students)
